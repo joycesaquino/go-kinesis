@@ -14,20 +14,20 @@ type Config struct {
 	Region     string `env:"KINESIS_STREAM_REGION"`
 }
 
-type KdsApi interface {
-	PutRecord(ctx context.Context, input *kinesis.PutRecordInput, optFns ...func(*kinesis.Options)) (*kinesis.PutRecordOutput, error)
-}
-
 type Client struct {
 	config     Config
 	awsKinesis KdsApi
 }
 
-func (c Client) Send(ctx context.Context, data interface{}) error {
-	return c.SendWithApi(ctx, c.awsKinesis, data)
+type KdsApi interface {
+	PutRecord(ctx context.Context, input *kinesis.PutRecordInput, optFns ...func(*kinesis.Options)) (*kinesis.PutRecordOutput, error)
 }
 
-func (c Client) SendWithApi(ctx context.Context, api KdsApi, data interface{}) error {
+func (c Client) Send(ctx context.Context, data interface{}) error {
+	return c.sendWithApi(ctx, c.awsKinesis, data)
+}
+
+func (c Client) sendWithApi(ctx context.Context, api KdsApi, data interface{}) error {
 	bytes, err := json.Marshal(data)
 	if err != nil {
 		return err
