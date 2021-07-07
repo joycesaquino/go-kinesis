@@ -2,6 +2,8 @@ package internal
 
 import (
 	"context"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/kinesis"
 	"os"
 	"testing"
 )
@@ -9,6 +11,18 @@ import (
 func init() {
 	_ = os.Setenv("KINESIS_STREAM_NAME", "feed-mock")
 	_ = os.Setenv("KINESIS_STREAM_REGION", "aws-region")
+}
+
+type KinesisMockAPI struct{}
+
+func (mock KinesisMockAPI) PutRecord(ctx context.Context,
+	input *kinesis.PutRecordInput,
+	optFns ...func(*kinesis.Options)) (*kinesis.PutRecordOutput, error) {
+
+	output := &kinesis.PutRecordOutput{
+		ShardId: aws.String("shard-01"),
+	}
+	return output, nil
 }
 
 func TestClient_Send(t *testing.T) {
@@ -27,11 +41,11 @@ func TestClient_Send(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:   "Should send message to kinesisd data stream",
+			name:   "Should send message to kinesis data stream",
 			fields: fields{NewClient()},
 			args: args{
 				ctx:  context.Background(),
-				api:  nil,
+				api:  &KinesisMockAPI{},
 				data: nil,
 			}, wantErr: false},
 	}
