@@ -23,6 +23,10 @@ type Client struct {
 	awsKinesis KdsApi
 }
 
+func (c Client) Send(ctx context.Context, data interface{}) error {
+	return c.SendWithApi(ctx, c.awsKinesis, data)
+}
+
 func (c Client) SendWithApi(ctx context.Context, api KdsApi, data interface{}) error {
 	bytes, err := json.Marshal(data)
 	if err != nil {
